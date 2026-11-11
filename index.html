@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>你好，Bobo！ · Bobo Bear Mandarin</title>
+<link rel="icon" href="assets/bobo_wave.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<style>
+:root{--brown:#7a3e17;--orange:#f08a24;--cream:#fff7e8;--blue:#2f5fd0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#3a2414;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:min(100vw,177.78vh);height:min(100vh,56.25vw);overflow:hidden;container-type:size;background:#fdf3df;font-family:'Baloo 2','ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',system-ui,sans-serif;color:var(--brown)}
+.zh{font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',sans-serif}
+#bg{position:absolute;inset:-2cqw;background-size:cover;background-position:center;filter:blur(.35cqw) saturate(1.05);transition:opacity .6s}
+#bg.sharp{filter:none}
+#wash{position:absolute;inset:0;background:linear-gradient(rgba(255,250,240,.22),rgba(255,244,222,.5));pointer-events:none}
+#bg.sharp + #wash{background:linear-gradient(rgba(255,250,240,0) 40%,rgba(255,244,222,.35))}
+#layer,#fx,#ui{position:absolute;inset:0}
+#fx{pointer-events:none;z-index:30}
+#ui{z-index:40;pointer-events:none}
+#ui>*{pointer-events:auto}
+/* sprites */
+.spr{position:absolute;width:0;transition:left .9s ease,bottom .9s ease,height .9s ease,opacity .4s;z-index:5}
+.spr .mv{position:absolute;left:0;bottom:0;height:100%;width:0;transform-origin:0 100%}
+.spr img{position:absolute;bottom:0;left:0;height:100%;transform:translateX(-50%);filter:drop-shadow(0 .5cqw .35cqw rgba(60,30,0,.22));pointer-events:none}
+.spr.flip img{transform:translateX(-50%) scaleX(-1)}
+.spr.hide{opacity:0}
+.bounce .mv{animation:bounce .55s ease-in-out infinite alternate}
+.bounce.b2 .mv{animation-delay:.18s}.bounce.b3 .mv{animation-delay:.36s}.bounce.b4 .mv{animation-delay:.27s}
+@keyframes bounce{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6%) rotate(3deg)}}
+.pop .mv{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.2)}100%{transform:scale(1)}}
+.shake .mv{animation:shake .35s linear 2}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.flipover .mv{animation:flipover 1s ease}
+@keyframes flipover{0%{transform:translateY(0) rotate(0)}40%{transform:translate(-20%,-40%) rotate(-200deg)}100%{transform:translateY(0) rotate(-360deg)}}
+.walk .mv{animation:walk .32s ease-in-out infinite alternate}
+@keyframes walk{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-4%) rotate(4deg)}}
+#stage.quake{animation:quake .08s linear 8}
+@keyframes quake{0%{transform:translate(0,0)}25%{transform:translate(.5cqw,-.4cqw)}50%{transform:translate(-.5cqw,.4cqw)}75%{transform:translate(.4cqw,.5cqw)}}
+/* door */
+#door{position:absolute;z-index:6;transform-origin:0 50%;transition:transform .9s ease;filter:drop-shadow(0 .5cqw .4cqw rgba(60,30,0,.25))}
+#door.open{transform:perspective(60cqw) rotateY(-78deg)}
+#door.knock{animation:knock .12s linear 3}
+@keyframes knock{50%{translate:.4cqw 0}}
+#doorframe{position:absolute;z-index:4;background:#5b3416;border-radius:1cqw;box-shadow:inset 0 0 0 .8cqw #8a5226}
+/* bubble */
+.bubble{position:absolute;z-index:35;transform:translateX(-50%);max-width:44cqw;background:#fff;border:.35cqw solid var(--brown);border-radius:2.6cqw;padding:1cqw 2cqw 1.1cqw;font-size:3.6cqw;line-height:1.25;color:#5a2a0c;box-shadow:0 .6cqw 0 rgba(122,62,23,.25);animation:bub .25s ease;width:max-content;max-width:58cqw;display:flex;align-items:center;gap:1cqw;pointer-events:auto}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-1.6cqw;margin-left:-1.2cqw;border:1.2cqw solid transparent;border-top-color:var(--brown);border-bottom:0}
+.bubble .who{position:absolute;top:-1.6cqw;left:1.6cqw;background:var(--orange);color:#fff;font-size:1.5cqw;padding:0 .9cqw;border-radius:1cqw;font-family:'Baloo 2',sans-serif}
+.bubble .rep{font-size:2.2cqw;cursor:pointer;opacity:.75}
+@keyframes bub{from{transform:translateX(-50%) scale(.6);opacity:0}}
+/* hint + buttons */
+#hint{position:absolute;left:50%;top:2cqw;transform:translateX(-50%);background:rgba(255,255,255,.92);border:.25cqw solid #e7b98a;border-radius:3cqw;padding:.5cqw 2.2cqw;font-size:2.1cqw;font-weight:600;white-space:nowrap;display:none;z-index:41}
+#hint .zh{font-size:2.5cqw;color:#c2410c}
+.btn{border:0;cursor:pointer;font-family:inherit;font-weight:800;color:#fff;background:var(--orange);border-radius:3cqw;padding:1cqw 3cqw;font-size:2.6cqw;box-shadow:0 .6cqw 0 #b85d0c;transition:transform .1s}
+.btn:active{transform:translateY(.4cqw);box-shadow:0 .2cqw 0 #b85d0c}
+.btn.blue{background:var(--blue);box-shadow:0 .6cqw 0 #1d3f94}
+.btn.ghost{background:#fff;color:var(--brown);box-shadow:0 .6cqw 0 #d9b48c}
+#home{position:absolute;left:1.5cqw;top:1.5cqw;width:6cqw;height:6cqw;border-radius:50%;font-size:3cqw;padding:0;z-index:45;display:none}
+#next{position:absolute;right:2cqw;bottom:2cqw;display:none;z-index:45}
+/* mic */
+#mic{position:absolute;left:2cqw;bottom:2cqw;display:none;align-items:center;gap:1.2cqw;z-index:44}
+#micDot{width:8cqw;height:8cqw;border-radius:50%;background:#fff;border:.4cqw solid var(--brown);display:flex;align-items:center;justify-content:center;font-size:4cqw;position:relative;box-shadow:0 0 0 calc(var(--lvl,0)*3cqw) rgba(240,138,36,.45);transition:box-shadow .06s}
+#micDot.on{background:#ffe1b8}
+#holdBtn{font-size:1.8cqw;padding:.8cqw 1.8cqw;line-height:1.1}
+#holdBtn.big{font-size:2.4cqw;padding:1.4cqw 2.6cqw}
+/* choices */
+.choices{position:absolute;left:50%;bottom:2.5cqw;transform:translateX(-50%);display:flex;gap:3cqw;z-index:42}
+.head{width:13cqw;height:13cqw;border-radius:50%;border:.5cqw solid #fff;background-color:#ffe9c7;background-repeat:no-repeat;cursor:pointer;box-shadow:0 .7cqw 0 rgba(122,62,23,.35);transition:transform .15s,opacity .3s}
+.head:active{transform:scale(.92)}
+.head.no{opacity:.35;pointer-events:none;filter:grayscale(1)}
+.head.wrong{animation:shake .3s linear 2}
+.nums{position:absolute;left:50%;bottom:3cqw;transform:translateX(-50%);display:flex;gap:2cqw;z-index:42}
+.num{width:11cqw;height:13cqw;border-radius:2.5cqw;background:#fff;border:.45cqw solid var(--orange);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 .6cqw 0 #e7a65f}
+.num b{font-size:6cqw;line-height:1;color:var(--orange)}
+.num i{font-style:normal;font-size:1.4cqw;letter-spacing:.2cqw;color:#d97706}
+.num.sel{background:var(--orange)}.num.sel b,.num.sel i{color:#fff}
+.dots{position:absolute;left:3cqw;top:9cqw;display:flex;flex-wrap:wrap;gap:.8cqw;width:30cqw;z-index:20}
+.dot{width:4.2cqw;height:4.2cqw;border-radius:50%;background:#fff;border:.35cqw solid var(--orange);display:flex;align-items:center;justify-content:center;font-size:2.4cqw;font-weight:800;color:var(--orange);animation:bub .25s ease}
+.bigsay{position:absolute;left:50%;top:9cqw;transform:translateX(-50%);font-size:8cqw;color:#c2410c;text-shadow:0 .5cqw 0 #fff,0 0 1.5cqw #fff;white-space:nowrap;z-index:25}
+.bigsay span{display:inline-block;opacity:0;transform:scale(.3);transition:all .25s cubic-bezier(.3,1.6,.5,1)}
+.bigsay span.in{opacity:1;transform:scale(1)}
+/* blind map */
+#dark{position:absolute;inset:0;z-index:12;pointer-events:none}
+.qmark{position:absolute;transform:translate(-50%,50%);width:9cqw;height:9cqw;border-radius:50%;background:rgba(255,255,255,.9);border:.4cqw dashed var(--orange);display:flex;align-items:center;justify-content:center;font-size:5cqw;color:var(--orange);font-weight:800;z-index:8}
+.twinkle{position:absolute;transform:translate(-50%,50%);font-size:3.4cqw;z-index:13;animation:tw 2.6s ease-in-out infinite;pointer-events:none}
+@keyframes tw{0%,60%,100%{opacity:0}75%{opacity:.85;transform:translate(-50%,50%) scale(1.2)}}
+.tree{position:absolute;transform:translate(-50%,0);font-size:10cqw;z-index:7;line-height:1}
+#pad{position:absolute;right:2cqw;bottom:2cqw;width:24cqw;height:24cqw;z-index:44;display:none}
+#pad button{position:absolute;width:8cqw;height:8cqw;border-radius:2cqw;border:.4cqw solid #fff;background:rgba(240,138,36,.85);color:#fff;font-size:4cqw;cursor:pointer;box-shadow:0 .5cqw 0 rgba(0,0,0,.3);padding:0}
+#pad button.sel{background:#2f5fd0}
+#pad .u{left:8cqw;top:0}#pad .d{left:8cqw;top:16cqw}#pad .l{left:0;top:8cqw}#pad .r{left:16cqw;top:8cqw}
+#guess{position:absolute;inset:0;z-index:36;background:radial-gradient(circle at 50% 45%,#3b2c52 0,#120c1c 70%);display:none}
+#guess .sil{position:absolute;left:50%;bottom:18cqw;height:27cqw;transform:translateX(-50%);transition:clip-path .6s,filter .6s}
+#guess .q{position:absolute;left:50%;top:13cqw;transform:translateX(-50%);font-size:16cqw;color:#fff;opacity:.85;font-weight:800;animation:bounce .8s ease-in-out infinite alternate}
+#listen{position:absolute;left:50%;top:2cqw;transform:translateX(-50%);color:#fff;font-size:2.2cqw;background:rgba(255,255,255,.15);padding:.4cqw 2cqw;border-radius:2cqw;display:none;z-index:37}
+#listen.on{display:block;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{background:rgba(240,138,36,.6)}}
+/* title / overlays */
+.panel{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center}
+.card{background:var(--cream);border:.5cqw solid var(--brown);border-radius:3cqw;padding:2.5cqw 3.5cqw;box-shadow:0 1cqw 0 rgba(122,62,23,.35);text-align:center}
+#title h1{margin:0;font-size:7cqw;color:#c2410c;text-shadow:0 .5cqw 0 #fff;line-height:1.1}
+#title h2{margin:.2cqw 0 1.5cqw;font-size:2.4cqw;font-weight:600}
+.levels{display:flex;gap:1.2cqw;justify-content:center;margin-top:2cqw;flex-wrap:wrap;width:64cqw}
+.lv{background:#fff;border:.3cqw solid #e7b98a;border-radius:1.6cqw;padding:.6cqw 1.2cqw;font-size:1.6cqw;cursor:pointer;font-family:inherit;color:var(--brown);font-weight:600}
+.lv span{display:block;font-size:3cqw}
+#gear{position:absolute;right:1.5cqw;top:1.5cqw;z-index:61;width:5.5cqw;height:5.5cqw;border-radius:50%;padding:0;font-size:2.8cqw}
+#setup .card{text-align:left;width:62cqw;font-size:1.9cqw}
+#setup h3{margin:0 0 1cqw;font-size:3cqw;text-align:center}
+#setup label{display:block;font-weight:800;margin-top:1.2cqw}
+#setup input[type=text]{width:100%;font-size:2.6cqw;padding:.6cqw 1.2cqw;border-radius:1.2cqw;border:.3cqw solid #e7b98a;font-family:inherit;color:var(--brown)}
+#setup .row{display:flex;align-items:center;gap:1.5cqw;margin-top:.6cqw}
+#setup .small{font-size:1.5cqw;opacity:.8}
+#meter{flex:1;height:2cqw;background:#f3dfc4;border-radius:1cqw;overflow:hidden}
+#meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f7b267,#f08a24)}
+input[type=range]{flex:1}
+#friendCard{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:54cqw;height:31cqw;background:#fffaf0;border-radius:3cqw;border:.6cqw solid #f0b45e;box-shadow:0 0 0 1cqw #fff,0 1.5cqw 3cqw rgba(0,0,0,.25);text-align:center;z-index:50;display:none;animation:pop .6s cubic-bezier(.3,1.6,.5,1);background-image:radial-gradient(circle at 8% 12%,#ffd27a 0 1cqw,transparent 1.1cqw),radial-gradient(circle at 92% 14%,#9cc5ff 0 1cqw,transparent 1.1cqw),radial-gradient(circle at 10% 88%,#ffb3c7 0 1cqw,transparent 1.1cqw),radial-gradient(circle at 90% 86%,#b6e3a8 0 1cqw,transparent 1.1cqw)}
+#friendCard .t{font-size:3.4cqw;margin-top:1.6cqw;color:#c2410c}
+#friendCard .n{font-size:6.5cqw;color:var(--blue);margin-top:.5cqw;font-weight:800;line-height:1.1}
+#friendCard .heads{display:flex;justify-content:center;gap:1.5cqw;margin-top:1.4cqw}
+#friendCard .heads div{width:9cqw;height:9cqw;border-radius:50%;background-repeat:no-repeat;background-color:#ffe9c7;border:.35cqw solid #fff;box-shadow:0 .3cqw .6cqw rgba(0,0,0,.15)}
+#friendCard .stamp{position:absolute;right:3cqw;top:2.2cqw;font-size:5cqw;transform:rotate(12deg)}
+#lyrics{position:absolute;left:50%;top:2cqw;transform:translateX(-50%);background:rgba(255,255,255,.9);border-radius:2.5cqw;padding:.8cqw 3cqw;text-align:center;z-index:41;display:none;min-width:50cqw;border:.3cqw solid #e7b98a}
+#lyrics div{font-size:2.4cqw;opacity:.45;transition:all .3s;white-space:nowrap}
+#lyrics div.cur{font-size:3.6cqw;opacity:1;color:#c2410c}
+#yt{position:absolute;left:2cqw;bottom:12cqw;background:#2f5fd0;color:#fff;font-weight:800;font-size:2.4cqw;padding:.6cqw 2cqw;border-radius:2cqw;display:none;z-index:44;animation:bounce .5s ease-in-out infinite alternate;box-shadow:0 .5cqw 0 #1d3f94}
+#vid{position:absolute;inset:0;width:100%;height:100%;background:#000;z-index:39;display:none;object-fit:contain}
+#loading{position:absolute;inset:0;z-index:70;background:rgba(58,36,20,.6);color:#fff;display:none;align-items:center;justify-content:center;font-size:3cqw;font-weight:800}
+#hint .rep{cursor:pointer;margin-left:.8cqw}
+#rotate{position:fixed;inset:0;background:#3a2414;color:#fff;z-index:99;display:none;align-items:center;justify-content:center;flex-direction:column;font:600 22px 'Baloo 2',sans-serif;text-align:center;padding:20px}
+@media (orientation:portrait) and (max-width:700px){#rotate.want{display:flex}}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+  <div id="bg"></div><div id="wash"></div>
+  <div id="layer"></div>
+  <div id="fx"></div>
+  <div id="ui">
+    <button id="home" class="btn ghost" title="Menu">🏠</button>
+    <div id="hint"></div>
+    <button id="next" class="btn">Next ▶</button>
+    <div id="yt">Your turn! 🎤</div>
+    <div id="mic"><div id="micDot">🎤</div><button id="holdBtn" class="btn blue">Hold to talk</button></div>
+    <div id="pad"><button class="u" data-d="u">▲</button><button class="l" data-d="l">◀</button><button class="r sel" data-d="r">▶</button><button class="d" data-d="d">▼</button></div>
+  </div>
+  <div id="guess"><div class="q">？</div><img class="sil" alt=""><div id="listen">🎤 Listening… say the name!</div></div>
+  <div id="friendCard"><div class="stamp">🏅</div><div class="t zh">Bobo 的好朋友</div><div class="n" id="fcName"></div><div class="heads" id="fcHeads"></div></div>
+  <video id="vid" playsinline preload="metadata"></video>
+  <div id="loading">Loading Bobo… 🐻</div>
+
+  <div id="title" class="panel">
+    <div class="card">
+      <h1 class="zh">你好，Bobo！</h1>
+      <h2>Bobo's New Friends · a self-introduction game</h2>
+      <button class="btn" id="playBtn" style="font-size:3.6cqw;padding:1cqw 5cqw">▶ Play</button>
+      <div class="levels" id="levels"></div>
+    </div>
+  </div>
+  <button id="gear" class="btn ghost" title="Parent settings">⚙️</button>
+
+  <div id="setup" class="panel" style="display:none;background:rgba(58,36,20,.55)">
+    <div class="card">
+      <h3>For parents 👋</h3>
+      <div class="small">Set this up once, then hand the game to your child. Instructions are in English; your child only needs to listen to and say the Chinese.</div>
+      <label>1. Your child's name</label>
+      <input type="text" id="nameIn" maxlength="14" placeholder="e.g. Mia">
+      <label>2. Microphone</label>
+      <div class="row"><button class="btn blue" id="micBtn" style="font-size:1.8cqw;padding:.6cqw 1.8cqw">Allow microphone</button><div id="meter"><i></i></div></div>
+      <div class="row small" id="micStatus">Have your child say “你好” — the bar should move.</div>
+      <div class="row"><span class="small">Less sensitive</span><input type="range" id="sens" min="1" max="10" value="5"><span class="small">More sensitive</span></div>
+      <label>3. Sound check</label>
+      <div class="row"><button class="btn ghost" id="voiceBtn" style="font-size:1.8cqw;padding:.6cqw 1.8cqw">🔊 Play Bobo</button><span class="small">Turn the volume up so your child can hear Bobo.</span></div>
+      <div style="text-align:center;margin-top:1.8cqw"><button class="btn" id="saveBtn">Done ✓</button></div>
+    </div>
+  </div>
+</div></div>
+<div id="rotate"><div style="font-size:60px">📱↻</div><p>Turn your device sideways for a bigger game!</p><button class="btn" onclick="this.parentNode.classList.remove('want')" style="font-size:18px;padding:8px 22px">OK</button></div>
+<audio id="song" src="assets/song.mp3" preload="auto"></audio>
+
+<script>
+"use strict";
+/* ================= text of every recorded line (shown in bubbles) ================= */
+const T = {
+  bobo:['我——叫——Bobo！','老师说要大声的呀。','咦？有人敲门！','你是谁？','你好，小猫！','你好，小兔！','你好，小鸡！','大家好！我们是好朋友！','我几岁？',
+        '一','二','三','四','五','六','七','八','九','十','我三岁！','我十岁！','哦……我三岁。','你几岁？',
+        '我一岁。','我两岁。','我三岁。','我四岁。','我五岁。','我六岁。','真棒！','嗯嗯嗯！','好！','一、二、三，木头人！',
+        '咚！你好，你叫什么？','它不说话。','还有两个朋友！','还有一个朋友！','我找到大家了！','啊？我没听清。','再见，小猫！','再见，小兔！','再见，小鸡！','再见！','一岁！','两岁！','三岁！','四岁！','五岁！','六岁！'],
+  teacher:['小朋友们好！欢迎回到学校！','我们来自我介绍吧。','Bobo，大声说，你叫什么？','好……好大声……','小朋友，你叫什么？','小朋友，你几岁？'],
+  cat:['我叫小猫。','你好！','嘻嘻！Bobo，你不是十岁！','一','二','三','四','我四岁！','Bobo，我们玩一二三木头人！','猜猜我是谁？','嘻嘻，我不是小兔！再猜猜！','嘻嘻，我不是小鸡！再猜猜！','对了！我是小猫！','再见！'],
+  bunny:['我叫小兔。','你好！','Bobo，你三岁！','一','二','我两岁！','Bobo，蒙上眼睛！','猜猜我是谁？','嘻嘻，我不是小猫！再猜猜！','嘻嘻，我不是小鸡！再猜猜！','对了！我是小兔！','再见！'],
+  chick:['我叫小鸡。','你好！','哈哈！不是嘴巴，是眼睛！','猜猜我是谁？','嘻嘻，我不是小猫！再猜猜！','嘻嘻，我不是小兔！再猜猜！','对了！我是小鸡！','再见！','嘻嘻嘻～'],
+  age:['一岁','两岁','三岁','四岁','五岁','六岁'],
+  narr:["Welcome to Bobo's school! Let's meet Bobo's new friends!","Wow, Bobo is so loud! Now it's your turn. Say your name loudly — let's see!","Wow! The leaves fell down!",
+        "Knock knock! Someone is at the door. Listen!","Say hello to 小猫!","Say hello to 小兔!","Say hello to 小鸡!","Let's count with Bobo!","How old are you? Tap your age.","Now you say it!",
+        "Let's play a game! Bobo can't see. Help him find his friends!","Now you say it! 一二三，木头人！","Tap an arrow, then say 走! The louder you say it, the faster Bobo walks. Stop talking, and Bobo stops.",
+        "Oops! It's a tree, not a friend. Let's keep looking!","You caught a friend! Who is it? 是小猫？是小兔？还是小鸡？ Say the name!","Tap the friend you think it is.","Let's watch and sing!",
+        "Say goodbye to 小猫!","Say goodbye to 小兔!","Say goodbye to 小鸡!","Great job! See you next time!","Your turn!","Great job!","Louder, please!","Try again!"]
+};
+/* which recorded line each friend uses for each job */
+const F = {
+  cat:  {name:'小猫', wave:'cat_wave',   gig:'cat_giggle',   face:'50% 18%', size:'190%', iam:1, hi:2, guess:10, not:{bunny:11,chick:12}, yes:13, bye:14, boboHi:5, boboBye:40, narrHi:5, narrBye:18},
+  bunny:{name:'小兔', wave:'bunny_wave', gig:'bunny_giggle', face:'50% 16%', size:'135%', iam:1, hi:2, guess:8,  not:{cat:9,chick:10},   yes:11, bye:12, boboHi:6, boboBye:41, narrHi:6, narrBye:19},
+  chick:{name:'小鸡', wave:'chick_wave', gig:'chick_giggle', face:'45% 22%', size:'170%', iam:1, hi:2, guess:4,  not:{cat:5,bunny:6},     yes:7,  bye:8,  boboHi:7, boboBye:42, narrHi:7, narrBye:20}
+};
+const KEYS=['cat','bunny','chick'];
+const NUMS=['','一','两','三','四','五','六'];
+const AGE_SOUNDS={1:'一1衣医依伊壹',2:'两2二俩亮凉梁量',3:'三3山伞散叁',4:'四4寺似饲肆思',5:'五5午舞无武吴伍屋',6:'六6溜流刘留陆'};
+function matchAge(txt,n){ for(const ch of AGE_SOUNDS[n]) if(txt.includes(ch)) return 'ok';
+  for(let m=1;m<=6;m++) if(m!==n) for(const ch of AGE_SOUNDS[m]) if(txt.includes(ch)) return 'wrong'; return null; }
+const LABEL={bobo:'Bobo',teacher:'老师',cat:'小猫',bunny:'小兔',chick:'小鸡'};
+const MATCH = {cat:'猫毛帽冒貌茂卯锚矛茅髦喵咪', bunny:'兔图土吐涂途突秃徒凸屠', chick:'鸡机几记及级急吉极即基积集计季纪击姬肌饥激迹'};
+const MATCH_EN = {cat:/\b(cat|kitty|kitten|mao)\b/i, bunny:/\b(bunny|rabbit|tu)\b/i, chick:/\b(chick|chicken|chickie|ji)\b/i};
+
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const stage=$('#stage'), layer=$('#layer'), fx=$('#fx');
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const store = {get(k,d){try{const v=localStorage.getItem('boboHello.'+k);return v===null?d:v}catch(e){return d}}, set(k,v){try{localStorage.setItem('boboHello.'+k,v)}catch(e){}}};
+const shuffle = a => {a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const A = n => 'assets/' + n + '.webp';
+let childName = store.get('name','');
+const kidName = () => childName.trim() || '小朋友';
+const zhWrap = t => t.replace(/([　-鿿＀-￯]+)/g,'<span class="zh">$1</span>');
+
+/* abort system: Home stops every running scene */
+const ABORT={abort:true}; let RUN=0, abortReject=null, abortP=null;
+function newRun(){ RUN++; if(abortReject) abortReject(ABORT); abortP=new Promise((_,rej)=>abortReject=rej); abortP.catch(()=>{}); return RUN; }
+newRun();
+const guard = p => Promise.race([p, abortP]);
+const wait = ms => guard(sleep(ms));
+
+/* ================= audio: sound effects + recorded voice clips ================= */
+let AC=null;
+function audioInit(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); }
+function tone(f,dur,type='sine',vol=.25,slide,delay=0){
+  if(!AC) return; const t=AC.currentTime+delay, o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); o.connect(g).connect(AC.destination); o.start(t); o.stop(t+dur+.02);
+}
+const SFX={ knock(){[0,.2,.4].forEach(d=>tone(150,.12,'triangle',.6,70,d))}, pop(){tone(480,.12,'sine',.3,950)},
+  ding(){tone(880,.25,'sine',.25);tone(1320,.4,'sine',.22,null,.12)}, boing(){tone(320,.4,'sine',.3,110)}, thud(){tone(95,.3,'sine',.7,40)},
+  step(){tone(240,.05,'triangle',.07)}, whoosh(){tone(900,.5,'sawtooth',.05,120)}, turn(){tone(660,.12,'sine',.25);tone(990,.25,'sine',.25,null,.1)} };
+
+const CLIPS={}, RAW={};
+const clipList=[]; for(const who of ['bobo','teacher','cat','bunny','chick','narr','age']) T[who].forEach((_,i)=>clipList.push(who+(i+1)));
+/* all voice lines of one character live in one file (assets/sprites/<who>.mp3); SPR gives [start, length] in seconds */
+const SPR={"age":{"1":[0.5,0.82],"2":[1.82,0.96],"3":[3.28,0.94],"4":[4.72,0.9],"5":[6.12,0.86],"6":[7.48,0.9]},"bobo":{"1":[0.5,1.55],"2":[2.55,2.57],"3":[5.62,2.57],"4":[8.69,1.55],"5":[10.74,2.03],"6":[13.27,1.95],"7":[15.72,1.83],"8":[18.05,3.29],"9":[21.84,1.67],"10":[24.01,1.29],"11":[25.8,1.27],"12":[27.57,1.47],"13":[29.54,1.17],"14":[31.21,1.13],"15":[32.84,1.35],"16":[34.69,1.15],"17":[36.34,1.35],"18":[38.19,1.47],"19":[40.16,1.55],"20":[42.21,1.63],"21":[44.34,1.47],"22":[46.31,2.71],"23":[49.52,1.75],"24":[51.77,1.61],"25":[53.88,1.83],"26":[56.21,1.71],"27":[58.42,1.67],"28":[60.59,1.67],"29":[62.76,1.75],"30":[65.01,1.77],"31":[67.28,1.27],"32":[69.05,1.15],"33":[70.701,4.31],"34":[75.511,2.87],"35":[78.881,1.83],"36":[81.211,1.77],"37":[83.481,2.17],"38":[86.151,1.87],"39":[88.521,2.37],"40":[91.391,1.97],"41":[93.861,1.83],"42":[96.191,1.89],"43":[98.581,1.31]},"bunny":{"1":[0.5,2.17],"2":[3.17,1.67],"3":[5.34,2.77],"4":[8.61,1.09],"5":[10.2,1.13],"6":[11.83,1.93],"7":[14.26,2.63],"8":[17.39,2.39],"9":[20.28,5.19],"10":[25.97,4.75],"11":[31.22,2.47],"12":[34.19,1.61]},"cat":{"1":[0.5,1.03],"2":[2.03,0.79],"3":[3.32,2.53],"4":[6.35,0.57],"5":[7.42,0.57],"6":[8.49,0.65],"7":[9.64,0.67],"8":[10.81,0.93],"9":[12.24,2.57],"10":[15.31,1.45],"11":[17.26,2.69],"12":[20.45,2.61],"13":[23.56,1.65],"14":[25.71,0.73]},"chick":{"1":[0.5,1.75],"2":[2.75,1.17],"3":[4.42,3.79],"4":[8.71,2.17],"5":[11.38,3.87],"6":[15.75,3.57],"7":[19.82,2.51],"8":[22.83,1.37],"9":[24.7,1.86]},"narr":{"1":[0.5,3.74],"2":[4.74,6.26],"3":[11.5,2.38],"4":[14.38,3.34],"5":[18.22,2.3],"6":[21.02,2.38],"7":[23.9,2.26],"8":[26.66,1.58],"9":[28.74,2.4],"10":[31.64,1.28],"11":[33.42,4.38],"12":[38.3,4.28],"13":[43.08,9.02],"14":[52.6,4.06],"15":[57.16,6.66],"16":[64.32,1.98],"17":[66.8,1.52],"18":[68.82,2.36],"19":[71.68,2.42],"20":[74.6,2.34],"21":[77.44,2.5],"22":[80.44,1.08],"23":[82.02,1.14],"24":[83.66,1.36],"25":[85.52,1.14]},"teacher":{"1":[0.5,2.47],"2":[3.47,1.53],"3":[5.5,2.45],"4":[8.45,1.41],"5":[10.36,1.71],"6":[12.57,1.59]}};
+const rawLoad = Promise.all(Object.keys(SPR).map(w=>fetch('assets/sprites/'+w+'.mp3').then(r=>r.ok?r.arrayBuffer():null).then(b=>{ if(b) RAW[w]=b; }).catch(()=>{})));
+function sliceClips(w,buf){ const sr=buf.sampleRate, d=buf.getChannelData(0);
+  for(const n in SPR[w]){ const [st,len]=SPR[w][n]; const a=Math.max(0,Math.floor((st-0.06)*sr)), b=Math.min(d.length,Math.ceil((st+len+0.16)*sr));
+    const c=AC.createBuffer(1,b-a,sr); c.getChannelData(0).set(d.subarray(a,b)); CLIPS[w+n]=c; } }
+let decodeP=null;
+function decodeAll(){ if(decodeP) return decodeP; decodeP = rawLoad.then(()=>Promise.all(Object.keys(RAW).map(w=>new Promise(res=>{
+  try{ const ok=b=>{ try{sliceClips(w,b)}catch(e){} res(); }; const p=AC.decodeAudioData(RAW[w].slice(0), ok, ()=>res()); if(p&&p.then) p.then(ok).catch(()=>res()); }catch(e){res()} })))); return decodeP; }
+
+const Speech={active:false, quietUntil:0, src:null};
+let enVoice=null, zhVoice=null;
+function pickZh(){ if(!('speechSynthesis' in window)) return; const zh=speechSynthesis.getVoices().filter(v=>/^(zh|cmn)/i.test(v.lang)&&!/HK|yue|Canton/i.test(v.lang+v.name));
+  const sc=v=>(/CN|Hans|cmn/i.test(v.lang)?10:0)+(/Natural|Neural|Online|Xiaoxiao|Xiaoyi|Google|Tingting|婷婷|Lili|Yu-?shu|Premium|Enhanced/i.test(v.name)?5:0); zh.sort((a,b)=>sc(b)-sc(a)); zhVoice=zh[0]||null; }
+function pickEn(){ if(!('speechSynthesis' in window)) return; const vs=speechSynthesis.getVoices().filter(v=>/^en[-_](US|GB|AU)/i.test(v.lang));
+  const sc=v=>(/Samantha|Google US|Natural|Neural|Aria|Jenny|Zira|Karen|Moira/i.test(v.name)?5:0)+(/en[-_]US/i.test(v.lang)?2:0); vs.sort((a,b)=>sc(b)-sc(a)); enVoice=vs[0]||null; }
+if('speechSynthesis' in window){ pickEn(); pickZh(); speechSynthesis.onvoiceschanged=()=>{pickEn();pickZh()}; }
+/* play one recorded line; key like "bobo12". gate=false lets the mic keep listening */
+function play(key,{gate=true,vol=1}={}){
+  return guard(new Promise(res=>{
+    let done=false; const fin=()=>{ if(done) return; done=true; if(gate){Speech.active=false; Speech.quietUntil=performance.now()+300;} res(); };
+    if(gate) Speech.active=true;
+    const buf=CLIPS[key];
+    if(buf && AC){
+      stopVoice(); const s=AC.createBufferSource(); s.buffer=buf; const g=AC.createGain(); g.gain.value=vol; s.connect(g).connect(AC.destination);
+      s.onended=fin; s.start(); if(gate) Speech.src=s; setTimeout(fin, buf.duration*1000+600); return;
+    }
+    // no recording yet: synthesized voice (English parts in English, Chinese parts in Chinese)
+    const who=key.replace(/\d+$/,''), n=+key.match(/\d+$/)[0], text=(T[who]||[])[n-1]||'';
+    if(text && tts(text, who, fin)) return;
+    setTimeout(fin, 700+text.length*220);
+  }));
+}
+const PITCH={bobo:1.05,teacher:1,cat:1.5,bunny:1.3,chick:1.8,narr:1};
+/* speak text with synthesized voices; returns false if speech is unavailable */
+function tts(text, who, done){
+  if(!('speechSynthesis' in window)) return false;
+  const runs=[]; text.replace(/([\u3000-\u9fff\uff00-\uffef]+)|([^\u3000-\u9fff\uff00-\uffef]+)/g,(m,zh,en)=>{ const t=(zh||en).replace(/Bobo/gi, zh?'':'Bobo'); if(t.replace(/[\s.,!?—-]/g,'')) runs.push([zh?'zh':(who==='narr'?'en':'zh'), zh?zh:en.replace(/Bobo/gi,who==='narr'?'Bobo':'波波')]); });
+  if(!runs.length) return false;
+  try{ speechSynthesis.cancel(); let left=runs.length;
+    runs.forEach(([lang,t])=>{ const u=new SpeechSynthesisUtterance(t.replace(/——|……/g,'，')); u.lang=lang==='zh'?(zhVoice?zhVoice.lang:'zh-CN'):'en-US'; const v=lang==='zh'?zhVoice:enVoice; if(v) u.voice=v;
+      u.rate=lang==='zh'?.85:.92; u.pitch=PITCH[who]||1; u.onend=u.onerror=()=>{ if(--left<=0) done(); }; speechSynthesis.speak(u); });
+    setTimeout(done, 3000+text.length*160); return true; }catch(e){ return false; }
+}
+function speakText(text, who='narr'){ return guard(new Promise(res=>{ let d=false; const fin=()=>{ if(d) return; d=true; Speech.active=false; Speech.quietUntil=performance.now()+300; res(); };
+  Speech.active=true; if(!tts(text,who,fin)) setTimeout(fin,600+text.length*200); })); }
+function stopVoice(){ if(Speech.src){ try{Speech.src.stop()}catch(e){} Speech.src=null; } try{speechSynthesis.cancel()}catch(e){} }
+
+/* ================= stage helpers ================= */
+function setBg(name, sharp=false){ const b=$('#bg'); b.style.backgroundImage=name?`url(assets/bg_${name}.jpg)`:'none'; b.classList.toggle('sharp',sharp); }
+function sprite(img,{x=50,y=6,h=55,cls='',z}={}){
+  const d=document.createElement('div'); d.className='spr '+cls; d.innerHTML=`<div class="mv"><img src="${A(img)}" alt=""></div>`;
+  Object.assign(d.style,{left:x+'%',bottom:y+'%',height:h+'%'}); if(z) d.style.zIndex=z;
+  d.img=d.querySelector('img'); d.set=n=>{d.img.src=A(n)}; d.at=(x2,y2,h2)=>{ if(x2!=null) d.style.left=x2+'%'; if(y2!=null) d.style.bottom=y2+'%'; if(h2!=null) d.style.height=h2+'%'; };
+  d.anim=c=>{ d.classList.remove(c); void d.offsetWidth; d.classList.add(c); setTimeout(()=>d.classList.remove(c),1100) };
+  d.pos=()=>({x:parseFloat(d.style.left), y:parseFloat(d.style.bottom), h:parseFloat(d.style.height)});
+  layer.appendChild(d); return d;
+}
+let bubbleEl=null, lastKey=null;
+function bubble(text, at, who, key){
+  clearBubble(); let x,y;
+  if(at && at.pos){ const p=at.pos(); x=p.x; y=p.y+p.h+2; } else { x=at?at.x:50; y=at?at.y:70; }
+  y=Math.min(y,70);
+  const b=document.createElement('div'); b.className='bubble zh';
+  b.innerHTML=`${LABEL[who]?`<span class="who">${LABEL[who]}</span>`:''}<span>${text}</span>${key?'<span class="rep" title="Hear again">🔊</span>':''}`;
+  b.style.left=x+'%'; b.style.bottom=y+'%'; stage.appendChild(b); bubbleEl=b;
+  const rep=b.querySelector('.rep'); if(rep){ const k=key; rep.onclick=()=>play(k).catch(()=>{}); }
+  const half=b.offsetWidth/stage.clientWidth*50+1; b.style.left=Math.max(half,Math.min(100-half,x))+'%';
+}
+function clearBubble(){ if(bubbleEl){bubbleEl.remove(); bubbleEl=null;} }
+/* a character says recorded line n */
+async function say(who, n, at, text){ const key=who+n; bubble(text||T[who][n-1], at, who, key); await play(key); await wait(220); }
+/* narrator: English instruction shown in the top bar and spoken */
+async function narr(n){ hint(zhWrap(T.narr[n-1]), 'narr'+n); await play('narr'+n); await wait(150); }
+function hint(html, key){ const h=$('#hint'); if(!html){h.style.display='none';return}
+  h.innerHTML=html+(key?' <span class="rep" title="Hear again">🔊</span>':''); h.style.display='block';
+  const r=h.querySelector('.rep'); if(r) r.onclick=()=>play(key).catch(()=>{}); }
+function nextBtn(label='Next ▶'){ const b=$('#next'); b.textContent=label; b.style.display='block'; return guard(new Promise(r=>{ b.onclick=()=>{ b.style.display='none'; SFX.pop(); r(); }; })); }
+function clearStage(){
+  layer.innerHTML=''; fx.innerHTML=''; clearBubble(); hint(null);
+  document.querySelectorAll('.choices,.nums,.dots,.bigsay').forEach(e=>e.remove());
+  ['#next','#pad','#guess','#friendCard','#yt'].forEach(s=>$(s).style.display='none');
+  const v=$('#vid'); v.pause(); v.style.display='none'; $('#song').pause();
+  showMic(false); stopListen(); stopVoice(); Speech.active=false; stage.classList.remove('quake');
+}
+function quake(){ stage.classList.remove('quake'); void stage.offsetWidth; stage.classList.add('quake'); }
+function leaves(n=22){
+  for(let i=0;i<n;i++){ const l=document.createElement('div'); l.textContent=['🍂','🍃','🍁'][i%3];
+    const x=Math.random()*100, dur=1.6+Math.random()*1.8, rot=(Math.random()*720-360)|0;
+    Object.assign(l.style,{position:'absolute',left:x+'%',top:'-8%',fontSize:(2.5+Math.random()*2.5)+'cqw',transition:`top ${dur}s ease-in, transform ${dur}s linear`});
+    fx.appendChild(l); requestAnimationFrame(()=>requestAnimationFrame(()=>{ l.style.top=(85+Math.random()*12)+'%'; l.style.transform=`translateX(${(Math.random()*16-8)}cqw) rotate(${rot}deg)` }));
+    setTimeout(()=>l.remove(), dur*1000+1500); } }
+function birds(){ for(let i=0;i<4;i++){ const b=document.createElement('div'); b.textContent='🐦';
+  Object.assign(b.style,{position:'absolute',left:(20+i*15)+'%',top:(18+(i%2)*8)+'%',fontSize:'4cqw',transition:'all 1.4s ease-in',transform:'scaleX(-1)'});
+  fx.appendChild(b); requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.left=(110+i*5)+'%'; b.style.top=(-15-i*5)+'%'; })); setTimeout(()=>b.remove(),1800); } }
+function confetti(n=40){ const cols=['#f08a24','#2f5fd0','#ffd23f','#ff6b9a','#4cc38a'];
+  for(let i=0;i<n;i++){ const c=document.createElement('div'); const dur=1.4+Math.random()*1.4;
+    Object.assign(c.style,{position:'absolute',left:(Math.random()*100)+'%',top:'-4%',width:'1.2cqw',height:'.7cqw',background:cols[i%5],borderRadius:'.2cqw',transition:`top ${dur}s ease-in, transform ${dur}s linear`});
+    fx.appendChild(c); requestAnimationFrame(()=>requestAnimationFrame(()=>{ c.style.top='104%'; c.style.transform=`rotate(${Math.random()*900}deg) translateX(${Math.random()*10-5}cqw)` }));
+    setTimeout(()=>c.remove(),dur*1000+400); } }
+function headStyle(k){ return `background-image:url(${A(F[k].wave)});background-size:${F[k].size};background-position:${F[k].face}`; }
+function choices(keys){
+  const box=document.createElement('div'); box.className='choices'; let resolver;
+  keys.forEach(k=>{ const h=document.createElement('div'); h.className='head'; h.dataset.k=k; h.setAttribute('style',headStyle(k)); h.onclick=()=>{ SFX.pop(); resolver&&resolver(k); }; box.appendChild(h); });
+  $('#ui').appendChild(box);
+  return { el:box, wait:()=>guard(new Promise(r=>resolver=r)), wrong:k=>{ const h=box.querySelector(`[data-k=${k}]`); if(h) h.classList.add('wrong','no'); }, remove:()=>box.remove() };
+}
+function makeDoor(x=45){
+  const fr=document.createElement('div'); fr.id='doorframe'; Object.assign(fr.style,{left:(x-1)+'%',bottom:'12%',width:'20%',height:'68%'}); layer.appendChild(fr);
+  const d=document.createElement('img'); d.id='door'; d.src=A('door'); Object.assign(d.style,{left:x+'%',bottom:'13%',height:'66%'}); layer.appendChild(d); return d;
+}
+
+/* ================= microphone (volume only) ================= */
+const Mic={ok:false,tried:false,raw:0,level:0,hold:false,thr:.016};
+function setSens(s){ Mic.thr=.06*Math.pow(.72,s-1); }
+setSens(+store.get('sens',5));
+async function micInit(){
+  if(Mic.ok) return true; Mic.tried=true; audioInit();
+  try{ const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false}});
+    const src=AC.createMediaStreamSource(st); const an=AC.createAnalyser(); an.fftSize=1024; src.connect(an); Mic.an=an; Mic.buf=new Float32Array(an.fftSize); Mic.ok=true; return true;
+  }catch(e){ Mic.ok=false; return false; }
+}
+(function micLoop(){
+  let rms=0; if(Mic.ok&&Mic.an){ Mic.an.getFloatTimeDomainData(Mic.buf); let s=0; for(let i=0;i<Mic.buf.length;i++) s+=Mic.buf[i]*Mic.buf[i]; rms=Math.sqrt(s/Mic.buf.length); }
+  Mic.raw=rms; let L=Math.max(0,Math.min(1,(rms-Mic.thr)/(Mic.thr*7)));
+  if(Speech.active||performance.now()<Speech.quietUntil) L=0;
+  if(Mic.hold) L=Math.max(L,.5+.12*Math.sin(performance.now()/90));
+  Mic.level=Mic.level*.6+L*.4; if(Mic.level<.02) Mic.level=L>0?L:0;
+  const d=$('#micDot'); if(d){ d.style.setProperty('--lvl',Mic.level.toFixed(2)); d.classList.toggle('on',Mic.level>0.02); }
+  const m=$('#meter i'); if(m) m.style.width=Math.min(100,rms/.12*100)+'%';
+  requestAnimationFrame(micLoop);
+})();
+function showMic(on){ $('#mic').style.display=on?'flex':'none'; $('#holdBtn').classList.toggle('big',!Mic.ok); $('#holdBtn').textContent=Mic.ok?'Hold to talk':'🎤 Hold & talk'; if(!on) $('#yt').style.display='none'; }
+(function holdSetup(){ const b=$('#holdBtn'); const on=e=>{e.preventDefault();Mic.hold=true}, off=()=>Mic.hold=false;
+  b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off); b.addEventListener('pointerleave',off); b.addEventListener('pointercancel',off);
+  addEventListener('keydown',e=>{ if(e.code==='Space'){Mic.hold=true;e.preventDefault()} }); addEventListener('keyup',e=>{ if(e.code==='Space') Mic.hold=false }); })();
+function waitVoice({minMs=500,quietMs=650,maxMs=12000,onFrame}={}){
+  return guard(new Promise(res=>{ const g=RUN; let talked=0,quiet=0,last=performance.now(); const t0=last;
+    (function f(now){ if(g!==RUN) return; const dt=Math.min(100,now-last); last=now; const L=Mic.level; onFrame&&onFrame(L,dt);
+      if(L>0.02){talked+=dt;quiet=0}else quiet+=dt;
+      if(talked>=minMs&&quiet>=quietMs) return res('ok'); if(now-t0>maxMs) return res(talked>200?'ok':'timeout'); requestAnimationFrame(f); })(last); }));
+}
+/* the child's turn to speak: ding + "Your turn!" + wait; one "Louder, please!" retry */
+async function childSays(model, opts={}){
+  for(let tries=0; tries<2; tries++){
+    if(model) bubble(model,{x:50,y:66},'', null);
+    SFX.turn(); showMic(true); $('#yt').style.display='block';
+    const r=await waitVoice(opts);
+    showMic(false);
+    if(r==='ok') return true;
+    if(tries===0) await play('narr24');
+  }
+  return false;
+}
+
+/* ================= speech recognition (only for guessing names) ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition; let srBlocked=false, curRec=null;
+const srOK=()=>!!SR&&!srBlocked;
+function matchName(txt){ let best=null,pos=1e9;
+  for(const k of KEYS) for(const ch of MATCH[k]){ const i=txt.indexOf(ch); if(i>=0&&i<pos){pos=i;best=k} }
+  if(best) return best; for(const k of KEYS) if(MATCH_EN[k].test(txt)) return k; return null; }
+function stopListen(){ if(curRec){ try{curRec.abort()}catch(e){} curRec=null; } $('#listen').classList.remove('on'); }
+function listenOnce(ms=6000, matcher=matchName){
+  return guard(new Promise(res=>{
+    if(!srOK()) return res('blocked');
+    let done=false, heard=''; const r=new SR(); curRec=r;
+    const fin=v=>{ if(done) return; done=true; $('#listen').classList.remove('on'); try{r.abort()}catch(e){} curRec=null; res(v); };
+    r.lang='zh-CN'; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
+    r.onresult=e=>{ for(let i=0;i<e.results.length;i++) for(let j=0;j<e.results[i].length;j++) heard+='|'+e.results[i][j].transcript;
+      const m=matcher(heard); if(m) fin(m); else if(e.results[e.results.length-1].isFinal) fin(heard.replace(/\|/g,'').trim()?'unknown':null); };
+    r.onerror=e=>{ if(['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(e.error)){ srBlocked=true; fin('blocked'); } else fin(heard?(matcher(heard)||'unknown'):null); };
+    r.onend=()=>fin(heard?(matcher(heard)||'unknown'):null);
+    try{ r.start(); $('#listen').classList.add('on'); }catch(e){ srBlocked=true; fin('blocked'); }
+    setTimeout(()=>{ try{r.stop()}catch(e){} }, ms); setTimeout(()=>fin(heard?(matcher(heard)||'unknown'):null), ms+1500);
+  }));
+}
+
+/* =====================================================================
+   SCENES
+   ===================================================================== */
+
+/* 1. Opening — first day of school; the child says their name loudly */
+async function sOpening(){
+  setBg('classroom');
+  const bobo=sprite('bobo_wave',{x:-15,y:5,h:62});
+  await narr(1); hint(null);
+  bobo.at(32); await wait(900);
+  const t=sprite('teacher_smile',{x:120,y:0,h:68}); await wait(50); t.at(76); await wait(900);
+  await say('teacher',1,t); await say('teacher',2,t);
+  t.set('teacher_ask'); t.anim('pop'); await say('teacher',5,t);
+  await wait(300); bobo.set('bobo_shout'); bobo.at(null,null,68); await wait(450);
+  bubble(T.bobo[0],bobo,'bobo','bobo1'); const p=play('bobo1'); await wait(500); quake(); leaves(26); birds(); SFX.whoosh(); await p;
+  await wait(600);
+  t.set('teacher_shock'); t.anim('shake'); await wait(300);
+  await say('teacher',4,t);
+  bobo.set('bobo_puzzled'); bobo.at(null,null,62); await wait(1200);
+  t.set('teacher_ask'); t.anim('pop'); await say('teacher',5,t);
+  bobo.set('bobo_wave');
+  await narr(2);
+  let fell=false, loud=0;
+  await childSays(kidName()+'！',{maxMs:12000,onFrame:(L,dt)=>{ if(L>.6){ loud+=dt; if(loud>300&&!fell){ fell=true; quake(); leaves(24); SFX.whoosh(); t.set('teacher_shock'); t.anim('shake'); } } else loud=Math.max(0,loud-dt); }});
+  hint(null); clearBubble();
+  bobo.set('bobo_jump'); bobo.anim('pop'); confetti(40); SFX.ding();
+  t.set('teacher_smile');
+  if(fell) await narr(3); else await play('narr23');
+  hint(null); await wait(300); await nextBtn();
+}
+
+/* 2. Knock knock — Bobo asks 你是谁, friend says 我叫…, Bobo greets, then the child greets */
+async function sKnock(){
+  setBg('classroom');
+  const bobo=sprite('bobo_wave',{x:16,y:5,h:52});
+  const door=makeDoor(45); const seats=[73,83,93]; const order=shuffle(KEYS);
+  await wait(400);
+  for(let r=0;r<order.length;r++){
+    const k=order[r], f=F[k];
+    door.classList.remove('knock'); void door.offsetWidth; door.classList.add('knock'); SFX.knock(); await wait(800);
+    if(r===0){ await say('bobo',3,bobo); await narr(4); }
+    await say('bobo',4,bobo);
+    await say(k,f.iam,{x:70,y:62});
+    SFX.ding(); const fs=sprite(f.wave,{x:54.5,y:13,h:50,z:5}); door.classList.add('open'); await wait(900); fs.anim('pop'); confetti(20);
+    await say('bobo',f.boboHi,bobo);
+    await narr(f.narrHi);
+    await childSays(T.bobo[f.boboHi-1]);
+    hint(null);
+    await say(k,f.hi,fs);
+    fs.at(seats[r],5,36); fs.style.zIndex=7; await wait(700); door.classList.remove('open'); await wait(700);
+  }
+  bobo.set('bobo_jump'); bobo.anim('pop'); confetti(40); SFX.ding();
+  await say('bobo',8,bobo);
+  await wait(300); await nextBtn();
+}
+
+/* 3. How old? — counting, then the child taps and says 我_岁 */
+async function sAge(){
+  setBg('math');
+  const bobo=sprite('bobo_count',{x:50,y:4,h:58});
+  let dots=null; const newDots=()=>{ if(dots) dots.remove(); dots=document.createElement('div'); dots.className='dots'; $('#ui').appendChild(dots); };
+  const addDot=n=>{ const d=document.createElement('div'); d.className='dot'; d.textContent=n; dots.appendChild(d); SFX.step(); };
+  const count=async(who,first,from,to,at)=>{ for(let i=from;i<=to;i++){ addDot(i); bubble(T[who][first+i-from-1],at,who,null); await play(who+(first+i-from)); await wait(120); } };
+  await wait(400);
+  await narr(8); hint(null);
+  await say('bobo',9,bobo);
+  newDots(); await count('bobo',10,1,3,bobo);
+  bobo.anim('shake'); await count('bobo',13,4,10,bobo);
+  bobo.set('bobo_jump'); bobo.anim('pop');
+  await say('bobo',21,bobo);
+  const cat=sprite('cat_giggle',{x:84,y:4,h:44}); cat.anim('pop');
+  await say('cat',3,cat);
+  const bun=sprite('bunny_wave',{x:16,y:4,h:40}); bun.anim('pop');
+  await say('bunny',3,bun);
+  newDots(); for(let i=1;i<=3;i++) addDot(i);
+  bobo.set('bobo_puzzled'); await say('bobo',22,bobo);
+  await wait(300);
+  cat.set('cat_wave'); newDots(); await count('cat',4,1,4,cat); await say('cat',8,cat);
+  newDots(); await count('bunny',4,1,2,bun); await say('bunny',6,bun);
+  dots.remove();
+  bobo.set('bobo_wave'); bobo.at(50,18,50); cat.at(25,18,34); bun.at(10,18,38);
+  const tch=sprite('teacher_smile',{x:120,y:0,h:68}); await wait(50); tch.at(80); await wait(900);
+  tch.set('teacher_ask'); tch.anim('pop');
+  await say('teacher',6,tch,`${kidName()}，你几岁？`);
+  await narr(9);
+  const nums=document.createElement('div'); nums.className='nums'; let pick; const picked=new Promise(r=>pick=r);
+  for(let n=1;n<=6;n++){ const b=document.createElement('div'); b.className='num'; b.innerHTML=`<b>${n}</b><i>${'●'.repeat(n)}</i>`;
+    b.onclick=()=>{ SFX.pop(); nums.querySelectorAll('.num').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); pick(n); }; nums.appendChild(b); }
+  $('#ui').appendChild(nums);
+  const n=await guard(picked); nums.style.pointerEvents='none'; nums.querySelectorAll('.num:not(.sel)').forEach(x=>x.style.visibility='hidden'); hint(null); tch.set('teacher_smile');
+  const age=NUMS[n]+'岁';
+  await wait(300); await play('age'+n);          // background voice reads the age
+  await narr(10);
+  for(let tries=0;;tries++){
+    bubble(age,{x:50,y:66},'',null);
+    SFX.turn(); showMic(true); $('#yt').style.display='block';
+    let r = srOK() ? await listenOnce(7000, t=>matchAge(t,n)) : 'blocked';
+    if(r==='blocked'){ const v=await waitVoice(); r = v==='ok' ? 'ok' : null; }
+    showMic(false);
+    if(r==='ok' || tries>=2) break;
+    await play('narr25'); await play('age'+n);
+  }
+  nums.remove(); hint(null); clearBubble();
+  bobo.set('bobo_jump'); bobo.anim('pop'); confetti(40); SFX.ding();
+  await say('bobo',30,bobo);
+  await wait(300); await nextBtn();
+}
+
+/* 4. Blindfold game */
+async function chant(runners){
+  clearBubble(); const el=document.createElement('div'); el.className='bigsay zh'; const parts=['一','、','二','、','三','，','木','头','人','！'];
+  el.innerHTML=parts.map(c=>`<span>${c}</span>`).join(''); $('#ui').appendChild(el);
+  const p=play('bobo33'); const sp=el.querySelectorAll('span'); const gaps=[0,0,450,0,450,0,450,220,220,0];
+  for(let i=0;i<sp.length;i++){ await wait(gaps[i]); sp[i].classList.add('in'); } await p;
+  if(runners){ // friends run away and hide, like the real game
+    runners.forEach((f,i)=>{ const tx=[8,94,70][i]; if(tx<parseFloat(f.style.left)) f.classList.add('flip'); f.classList.add('walk'); f.style.transition='left 1.6s ease-in, bottom 1.6s ease-in, height 1.6s, opacity 1.6s'; f.at(tx,[30,40,48][i],22); f.style.opacity='0'; });
+    for(let i=0;i<5;i++){ SFX.step(); await wait(300); } play('chick9',{gate:false,vol:.6}).catch(()=>{}); await wait(400); runners.forEach(f=>f.remove());
+  }
+  await narr(12);
+  await childSays(null,{minMs:900,maxMs:14000});
+  hint(null); await wait(300); el.remove();
+}
+async function sBlind(){
+  setBg('pe');
+  const bobo=sprite('bobo_wave',{x:28,y:4,h:56});
+  const fs=KEYS.map((k,i)=>sprite(F[k].wave,{x:62+i*13,y:4,h:42}));
+  await wait(400);
+  await say('cat',9,fs[0]);
+  await say('bunny',7,fs[1]);
+  bobo.set('bobo_mouth'); bobo.anim('pop'); SFX.pop(); await wait(400);
+  await say('bobo',31,bobo);
+  fs[2].set('chick_giggle'); await say('chick',3,fs[2]);
+  bobo.set('bobo_blind'); bobo.anim('pop'); await wait(300);
+  await say('bobo',32,bobo); fs[2].set('chick_wave');
+  await narr(11);
+  await chant(fs);
+  bobo.remove(); clearBubble();
+
+  const dark=document.createElement('div'); dark.id='dark'; layer.appendChild(dark);
+  const B={x:12,y:10,h:22,dir:'r'}; const bs=sprite('bobo_blind',{x:B.x,y:B.y,h:B.h,z:9}); bs.style.transition='none';
+  const tree={x:30+Math.random()*40,y:28+Math.random()*20}; const tr=document.createElement('div'); tr.className='tree'; tr.textContent='🌳';
+  Object.assign(tr.style,{left:tree.x+'%',bottom:tree.y+'%'}); layer.appendChild(tr); let treeGag=false;
+  const D=(ax,ay,bx,by)=>Math.hypot(ax-bx,(ay-by)*0.5625);
+  let left=shuffle(KEYS); const marks={};
+  function place(){
+    Object.values(marks).forEach(m=>{m.q.remove();m.tw.remove()}); for(const k in marks) delete marks[k];
+    for(const k of left){ let x,y,tries=0;
+      do{ x=12+Math.random()*80; y=6+Math.random()*58; tries++; }
+      while(tries<300 && (D(x,y,B.x,B.y)<26 || D(x,y,tree.x,tree.y)<14 || Object.values(marks).some(m=>D(x,y,m.x,m.y)<18)));
+      const q=document.createElement('div'); q.className='qmark'; q.textContent='?'; Object.assign(q.style,{left:x+'%',bottom:y+'%'}); layer.appendChild(q);
+      const tw=document.createElement('div'); tw.className='twinkle'; tw.textContent='✨'; Object.assign(tw.style,{left:x+'%',bottom:(y+6)+'%',animationDelay:(Math.random()*2)+'s'}); layer.appendChild(tw);
+      marks[k]={x,y,q,tw,lastG:0}; }
+  }
+  place();
+  const pad=$('#pad');
+  const setDir=d=>{ B.dir=d; pad.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.d===d)); };
+  pad.querySelectorAll('button').forEach(b=>b.onpointerdown=e=>{e.preventDefault();setDir(b.dataset.d);SFX.pop();});
+  const keyDir=e=>{ const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r'}[e.key]; if(m){setDir(m);e.preventDefault();} };
+  addEventListener('keydown',keyDir); setDir('r');
+  const drawLight=()=>{ const r=stage.getBoundingClientRect(); const cx=B.x/100*r.width, cy=(1-(B.y+B.h*0.55)/100)*r.height, rad=r.width*0.11;
+    dark.style.background=`radial-gradient(circle at ${cx}px ${cy}px, rgba(10,8,25,0) ${rad*0.75}px, rgba(10,8,25,.55) ${rad*1.15}px, rgba(10,8,25,.94) ${rad*1.7}px)`; };
+  const place2=()=>{ bs.style.left=B.x+'%'; bs.style.bottom=B.y+'%'; drawLight(); };
+  place2();
+  if(location.hash==='#debug') window.__dbg={B,marks,tree,setDir};
+  const controls=on=>{ pad.style.display=on?'block':'none'; showMic(on); };
+  try{
+    controls(true); await narr(13);
+    while(left.length){
+      hint(zhWrap('Tap an arrow, then say 走～～～ (zǒu)! Louder = faster'),'narr13'); controls(true);
+      const caught=await guard(new Promise(res=>{
+        const g=RUN; let last=performance.now(), stepT=0, busy=false;
+        (function loop(now){
+          if(g!==RUN) return; const dt=Math.min(60,now-last)/1000; last=now;
+          const L=busy?0:Mic.level, moving=L>0.02; bs.classList.toggle('walk',moving);
+          if(moving){
+            const sp=7+30*L; let nx=B.x, ny=B.y;
+            if(B.dir==='r') nx+=sp*dt; if(B.dir==='l') nx-=sp*dt; if(B.dir==='u') ny+=sp*dt*1.5; if(B.dir==='d') ny-=sp*dt*1.5;
+            nx=Math.max(5,Math.min(95,nx)); ny=Math.max(2,Math.min(66,ny));
+            if(D(nx,ny,tree.x,tree.y)<8){
+              SFX.thud(); bs.anim('shake'); busy=true;
+              B.x-=(B.dir==='r'?3:B.dir==='l'?-3:0); B.y-=(B.dir==='u'?4:B.dir==='d'?-4:0); place2();
+              (async()=>{ if(!treeGag){ treeGag=true; await say('bobo',34,bs); bubble('……',{x:tree.x,y:tree.y+16},'',null); await wait(1500); await say('bobo',35,bs); clearBubble(); await narr(14); hint(zhWrap('Tap an arrow, then say 走～～～ (zǒu)! Louder = faster'),'narr13'); } else await wait(500); busy=false; })().catch(()=>{});
+            } else { B.x=nx; B.y=ny; if(B.dir==='l') bs.classList.add('flip'); if(B.dir==='r') bs.classList.remove('flip'); place2(); }
+            stepT+=dt; if(stepT>.32){stepT=0;SFX.step();}
+          }
+          for(const k of left){ const m=marks[k]; const d=D(B.x,B.y+B.h*0.3,m.x,m.y);
+            if(d<7.5){ bs.classList.remove('walk'); return res(k); }
+            if(d<22 && now-m.lastG>4000){ m.lastG=now; play('chick9',{gate:false,vol:.5}).catch(()=>{}); } }
+          requestAnimationFrame(loop);
+        })(last);
+      }));
+      controls(false); hint(null);
+      await guessFriend(caught);
+      marks[caught].q.remove(); marks[caught].tw.remove(); left=left.filter(k=>k!==caught);
+      if(left.length){ await say('bobo',left.length===2?36:37,bs); await chant(); place(); }
+    }
+  } finally { removeEventListener('keydown',keyDir); controls(false); }
+  dark.remove(); layer.innerHTML='';
+  const b2=sprite('bobo_jump',{x:50,y:4,h:60}); KEYS.forEach((k,i)=>sprite(F[k].wave,{x:[18,80,92][i],y:4,h:[44,46,40][i],cls:'bounce b'+(i+2)}));
+  b2.anim('pop'); confetti(60); SFX.ding();
+  await say('bobo',38,b2);
+  await wait(300); await nextBtn();
+}
+async function guessFriend(k){
+  const f=F[k], gz=$('#guess'), sil=gz.querySelector('.sil'), q=gz.querySelector('.q');
+  sil.src=A(f.gig); let clue=0, unheard=0, ch=null;
+  const render=()=>{ q.style.display=clue===0?'block':'none'; sil.style.display=clue===0?'none':'block';
+    sil.style.filter='brightness(0) invert(.12)'; sil.style.clipPath=clue===1?'inset(0 0 70% 0)':clue===2?'inset(0 0 42% 0)':'none'; };
+  render(); gz.style.display='block';
+  const spot={x:50,y:66};
+  await narr(15);
+  await say(k,f.guess,spot);
+  ch=choices(KEYS); ch.el.style.zIndex=38;
+  let useSR=srOK();
+  while(true){
+    hint(zhWrap(useSR?'Say the name — or tap the friend! 你是……':'Tap the friend! Say the name too: 你是……'),'narr15');
+    let ans = useSR ? await Promise.race([listenOnce(), ch.wait()]) : await ch.wait();
+    stopListen();
+    if(ans==='blocked'){ useSR=false; continue; }
+    if(!ans||ans==='unknown'){ unheard++; await say('bobo',39,{x:30,y:30}); if(unheard>=2){ useSR=false; await narr(16); } else await say(k,f.guess,spot); continue; }
+    if(ans===k) break;
+    SFX.boing(); ch.wrong(ans);
+    await say(k,f.not[ans],spot);
+    clue=Math.min(2,clue+1); render();
+  }
+  if(ch) ch.remove(); hint(null); stopListen();
+  q.style.display='none'; sil.style.display='block'; sil.style.clipPath='none'; sil.style.filter='none'; sil.src=A(f.wave);
+  SFX.ding(); confetti(50);
+  await say(k,f.yes,spot);
+  await say('bobo',f.boboHi,{x:28,y:30});
+  await narr(f.narrHi);
+  await childSays(T.bobo[f.boboHi-1]);
+  hint(null);
+  await say(k,f.hi,spot);
+  gz.style.display='none';
+}
+
+/* 5. Ending — video (or the song until the video arrives), friend card, goodbyes at the door */
+let hasVideo=null;
+async function sEnding(){
+  setBg('music');
+  const bobo=sprite('bobo_jump',{x:50,y:4,h:56,cls:'bounce'});
+  KEYS.forEach((k,i)=>sprite(F[k].wave,{x:[22,78,90][i],y:4,h:[42,44,38][i],cls:'bounce b'+(i+2)}));
+  await wait(400);
+  await narr(17); hint(null);
+  if(hasVideo===null){ try{ const r=await fetch('assets/video.mp4',{method:'HEAD'}); hasVideo=r.ok; }catch(e){ hasVideo=false; } }
+  const skip=$('#next');
+  const media = hasVideo ? $('#vid') : $('#song');
+  if(hasVideo){ media.src='assets/video.mp4'; media.style.display='block'; media.onerror=()=>{ media.style.display='none'; }; }
+  media.currentTime=0;
+  skip.textContent='Skip ⏭'; skip.style.display='block'; skip.style.zIndex=58;
+  await guard(new Promise(res=>{ let done=false; const fin=()=>{ if(done) return; done=true; media.onended=null; res(); };
+    media.onended=fin; skip.onclick=()=>{ media.pause(); fin(); };
+    media.play().catch(()=>{ skip.textContent='▶ Play'; skip.onclick=()=>{ skip.textContent='Skip ⏭'; skip.onclick=()=>{media.pause();fin()}; media.play().catch(fin); }; }); }));
+  media.pause(); skip.style.display='none'; skip.style.zIndex=''; $('#vid').style.display='none';
+  // friend card
+  const fc=$('#friendCard'); $('#fcName').textContent=kidName();
+  $('#fcHeads').innerHTML=['bobo',...KEYS].map(k=>`<div style="${k==='bobo'?'background-image:url('+A('bobo_wave')+');background-size:150%;background-position:50% 8%':headStyle(k)}"></div>`).join('');
+  fc.style.display='block'; confetti(70); SFX.ding(); await wait(3200); fc.style.display='none';
+  // goodbyes: each friend goes home through the door
+  layer.innerHTML=''; setBg('classroom');
+  const bb=sprite('bobo_wave',{x:16,y:5,h:52}); const door=makeDoor(45);
+  const fr={}; KEYS.forEach((k,i)=>fr[k]=sprite(F[k].wave,{x:[73,83,93][i],y:5,h:36,z:7}));
+  await wait(600);
+  for(const k of KEYS){ const f=F[k], s=fr[k];
+    await say('bobo',f.boboBye,bb);
+    await narr(f.narrBye);
+    await childSays(T.bobo[f.boboBye-1]);
+    hint(null);
+    await say(k,f.bye,s);
+    door.classList.add('open'); await wait(500); s.style.zIndex=5; s.at(54.5,13,44); await wait(900);
+    s.classList.add('hide'); await wait(450); door.classList.remove('open'); await wait(800); s.remove();
+  }
+  bb.set('bobo_jump'); bb.anim('pop');
+  await say('bobo',43,bb);
+  confetti(60); SFX.ding();
+  await narr(21);
+  const b=$('#next'); b.textContent='↻ Play again'; b.style.display='block';
+  await guard(new Promise(r=>b.onclick=r)); b.style.display='none'; hint(null);
+  return 'again';
+}
+
+/* ================= flow ================= */
+const SCENES=[ {f:sOpening,icon:'🏫',label:'Story'},{f:sKnock,icon:'🚪',label:'Knock knock'},{f:sAge,icon:'🖐️',label:'How old?'},
+  {f:sBlind,icon:'🙈',label:'Blindfold game'},{f:sEnding,icon:'👋',label:'Song & goodbye'} ];
+async function start(from=0){
+  newRun(); clearStage(); $('#title').style.display='none'; $('#gear').style.display='none'; $('#home').style.display='block';
+  audioInit(); unlock(); if(!Mic.tried) micInit();
+  const ld=$('#loading'); ld.style.display='flex'; await Promise.race([decodeAll(), sleep(10000)]); ld.style.display='none';
+  try{ for(let i=from;i<SCENES.length;i++){ clearStage(); const r=await SCENES[i].f(); if(r==='again') i=-1; } }
+  catch(e){ if(e!==ABORT) console.error(e); }
+}
+function toTitle(){ newRun(); clearStage(); $('#home').style.display='none'; $('#title').style.display='flex'; $('#gear').style.display='block'; setBg('gate',true); }
+let unlocked=false;
+function unlock(){ if(unlocked) return; unlocked=true;
+  for(const m of [$('#song'),$('#vid')]){ m.muted=true; const p=m.play(); if(p&&p.then) p.then(()=>{m.pause();m.currentTime=0;m.muted=false}).catch(()=>{m.muted=false}); else m.muted=false; }
+  try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){} }
+
+SCENES.forEach((s,i)=>{ const b=document.createElement('button'); b.className='lv'; b.innerHTML=`<span>${s.icon}</span>${s.label}`; b.onclick=()=>{ if(!childName) openSetup(()=>start(i)); else start(i); }; $('#levels').appendChild(b); });
+$('#playBtn').onclick=()=>{ if(!childName) openSetup(()=>start(0)); else start(0); };
+$('#home').onclick=toTitle;
+let afterSetup=null;
+function openSetup(cb){ afterSetup=cb||null; $('#nameIn').value=childName; $('#sens').value=store.get('sens',5); $('#setup').style.display='flex'; $('#gear').style.display='none';
+  $('#micStatus').textContent=Mic.ok?'✅ Microphone is on. Have your child say “你好” — the bar should move.':'Have your child say “你好” — the bar should move.'; }
+$('#gear').onclick=()=>openSetup(null);
+$('#micBtn').onclick=async()=>{ audioInit(); const ok=await micInit(); $('#micStatus').textContent=ok?'✅ Microphone is on. Have your child say “你好” — the bar should move.':'⚠️ No microphone access. Your child can still play by holding the “Hold & talk” button.'; };
+$('#sens').oninput=e=>{ setSens(+e.target.value); store.set('sens',e.target.value); };
+$('#voiceBtn').onclick=async()=>{ audioInit(); unlock(); await decodeAll(); play('bobo4').catch(()=>{}); };
+$('#saveBtn').onclick=()=>{ childName=$('#nameIn').value.trim(); store.set('name',childName); $('#setup').style.display='none'; if($('#title').style.display!=='none') $('#gear').style.display='block'; const cb=afterSetup; afterSetup=null; if(cb) cb(); };
+$('#nameIn').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#saveBtn').click(); });
+if(innerHeight>innerWidth && innerWidth<700) $('#rotate').classList.add('want');
+toTitle();
+</script>
+</body>
+</html>
